@@ -1,0 +1,20 @@
+{
+  "name": "telegram-premium-bot",
+  "version": "1.0.0",
+  "description": "Premium Telegram Bot — Developer Tools, Community Management & Automation",
+  "main": "src/bot.js",
+  "scripts": {
+    "start": "node src/bot.js",
+    "dev": "node --watch src/bot.js"
+  },
+  "keywords": ["telegram", "bot", "premium", "tools"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "telegraf": "^4.16.0",
+    "dotenv": "^16.4.0",
+    "winston": "^3.13.0"
+  }
+}

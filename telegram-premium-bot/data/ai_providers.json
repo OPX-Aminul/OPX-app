@@ -1,0 +1,26 @@
+[
+  {
+    "id": "openai",
+    "name": "OpenAI",
+    "baseUrl": "https://api.openai.com/v1",
+    "apiKey": "",
+    "model": "gpt-4o-mini",
+    "priority": 1,
+    "enabled": true,
+    "timeout": 30000,
+    "maxRetries": 2,
+    "cooldownMs": 60000,
+    "health": "healthy"
+  },
+  {
+    "id": "azure",
+    "name": "Azure OpenAI",
+    "baseUrl": "https://YOUR_RESOURCE.openai.azure.com/openai/deployments/YOUR_DEPLOYMENT",
+    "apiKey": "",
+    "model": "gpt-4",
+    "priority": 2,
+    "enabled": false,
+    "timeout": 30000,
+    "maxRetries": 2
+  }
+]

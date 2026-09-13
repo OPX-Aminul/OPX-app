@@ -1,0 +1,23 @@
+{
+  "antiSpam": {
+    "enabled": true,
+    "maxMessagesPerMinute": 5,
+    "action": "warn"
+  },
+  "floodProtection": {
+    "enabled": true,
+    "cooldownMs": 1000
+  },
+  "linkFiltering": {
+    "enabled": false,
+    "allowedDomains": []
+  },
+  "badWordFiltering": {
+    "enabled": false,
+    "words": []
+  },
+  "warnings": {
+    "maxWarnings": 3,
+    "action": "mute"
+  }
+}

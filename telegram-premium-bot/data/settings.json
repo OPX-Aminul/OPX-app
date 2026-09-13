@@ -1,0 +1,17 @@
+{
+  "welcome": {
+    "welcomeEnabled": true,
+    "welcomeDeleteAfter": 10,
+    "welcomeMessage": "🎉 Welcome {firstName}!\n\nWelcome to {groupName}.\n\nEnjoy your stay! 🚀"
+  },
+  "rules": {
+    "enabled": true,
+    "content": "Please follow these rules:\n1. Be respectful\n2. No spam\n3. Have fun!"
+  },
+  "moderation": {
+    "antiSpam": true,
+    "floodProtection": true,
+    "linkFiltering": false,
+    "badWordFiltering": false
+  }
+}

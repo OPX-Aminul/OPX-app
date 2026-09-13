@@ -1,0 +1,11 @@
+[
+  {
+    "id": "telegram_ads",
+    "name": "Telegram Ads",
+    "supported": true,
+    "configuration": {
+      "campaignId": "",
+      "adId": ""
+    }
+  }
+]
