@@ -395,7 +395,7 @@ async function startWebServer() {
   const PORT = process.env.PORT || 3001
   
   app.use(express.json())
-  app.use(express.static(path.join(__dirname, '../../admin-panel')))
+  app.use(express.static(path.join(__dirname, '../admin-panel')))
   app.use('/api', apiRouter)
   
   // Health check
@@ -405,10 +405,10 @@ async function startWebServer() {
   
   // Admin Panel route
   app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../admin-panel/index.html'))
+    res.sendFile(path.join(__dirname, '../admin-panel/index.html'))
   })
   app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../admin-panel/index.html'))
+    res.sendFile(path.join(__dirname, '../admin-panel/index.html'))
   })
   
   const server = app.listen(PORT, '0.0.0.0', () => {

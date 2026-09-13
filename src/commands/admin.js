@@ -22,9 +22,14 @@ const handleAdmin = async (ctx) => {
   msg += `• Welcome: ${welcomeCfg.welcomeEnabled ? 'Enabled' : 'Disabled'} (${welcomeCfg.welcomeDeleteAfter}s auto-delete)\n\n`
   msg += 'Choose an option below 👇'
 
+  // Build the Mini App URL
+  const botUsername = ctx.botInfo?.username || 'opx_team_bot'
+  const miniAppUrl = `${process.env.WEB_APP_URL || 'https://your-service.onrender.com'}/admin?init_data=${encodeURIComponent(ctx.web_app_data || '')}`
+  
   await ctx.reply(msg, {
     reply_markup: {
       inline_keyboard: [
+        [{ text: '🤖 Open Admin Panel (Mini App)', web_app: { url: miniAppUrl } }],
         [{ text: '🛠 Manage Tools', callback_data: 'admin_tools' }, { text: '👤 Edit Profile', callback_data: 'admin_profile' }],
         [{ text: '🌐 Manage Websites', callback_data: 'admin_websites' }, { text: '👋 Welcome Config', callback_data: 'admin_welcome' }],
         [{ text: '📊 Statistics', callback_data: 'admin_stats' }, { text: '⚙️ Settings', callback_data: 'admin_settings' }],

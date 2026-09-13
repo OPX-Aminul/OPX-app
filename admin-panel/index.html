@@ -2,283 +2,939 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OPX Bot - Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OPX Bot - Admin Control Center</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-    .header h1 { font-size: 24px; margin-bottom: 5px; }
-    .header p { opacity: 0.8; }
-    .nav { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    .nav button { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
-    .nav button:hover, .nav button.active { background: #3b82f6; border-color: #3b82f6; }
-    .card { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #334155; }
-    .card h2 { margin-bottom: 15px; color: #60a5fa; }
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-    .stat-card { background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; }
-    .stat-card .value { font-size: 28px; font-weight: bold; color: #60a5fa; }
-    .stat-card .label { font-size: 14px; color: #94a3b8; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 5px; color: #94a3b8; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; }
-    .btn { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; }
-    .btn:hover { background: #2563eb; }
-    .btn-success { background: #10b981; }
-    .btn-success:hover { background: #059669; }
-    .btn-danger { background: #ef4444; }
-    .btn-danger:hover { background: #dc2626; }
-    .table { width: 100%; border-collapse: collapse; }
-    .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
-    .table th { color: #94a3b8; font-weight: 600; }
-    .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-    .badge-success { background: #10b981; color: white; }
-    .badge-warning { background: #f59e0b; color: white; }
-    .badge-danger { background: #ef4444; color: white; }
-    .hidden { display: none; }
-    .section { animation: fadeIn 0.3s; }
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-card: #1e293b;
+      --border: #334155;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .container { max-width: 100%; padding: 0; }
+    
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .header p { font-size: 12px; opacity: 0.8; }
+    
+    /* Navigation */
+    .nav {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav::-webkit-scrollbar { display: none; }
+    .nav button {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .nav button:hover, .nav button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    
+    /* Content */
+    .content { padding: 16px; }
+    .section { display: none; animation: fadeIn 0.3s ease; }
+    .section.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+    }
+    .card h2 { font-size: 16px; margin-bottom: 12px; color: var(--accent); }
+    .card h3 { font-size: 14px; margin-bottom: 10px; }
+    
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .stat-card {
+      background: var(--bg-primary);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .stat-card .value { font-size: 24px; font-weight: 700; color: var(--accent); }
+    .stat-card .label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+    
+    /* Forms */
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    /* Buttons */
+    .btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-success { background: var(--success); }
+    .btn-success:hover { background: #059669; }
+    .btn-danger { background: var(--danger); }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-small { padding: 6px 12px; font-size: 12px; width: auto; }
+    
+    /* Tables */
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-secondary); font-weight: 600; }
+    
+    /* Badges */
+    .badge {
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-success { background: var(--success); color: white; }
+    .badge-warning { background: var(--warning); color: black; }
+    .badge-danger { background: var(--danger); color: white; }
+    .badge-info { background: var(--accent); color: white; }
+    
+    /* Hidden */
+    .hidden { display: none !important; }
+    
+    /* Loading */
+    .loading { text-align: center; padding: 40px; color: var(--text-secondary); }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-secondary);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 1000;
+      border: 1px solid var(--border);
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 20px;
+    }
+    .modal {
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 400px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal h3 { margin-bottom: 16px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+    .modal-actions .btn { flex: 1; }
+    
+    /* Toggle */
+    .toggle { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
+    .toggle-label { font-size: 14px; }
+    .switch { position: relative; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--border); border-radius: 24px; transition: 0.3s; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+    input:checked + .slider { background: var(--accent); }
+    input:checked + .slider:before { transform: translateX(20px); }
+    
+    /* Empty state */
+    .empty { text-align: center; padding: 40px; color: var(--text-secondary); }
+    .empty-icon { font-size: 48px; margin-bottom: 16px; }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Header -->
     <div class="header">
-      <h1>🤖 OPX Team Bot</h1>
-      <p>Admin Control Panel</p>
+      <h1>OPX Team Bot</h1>
+      <p>Admin Control Center</p>
     </div>
-
+    
+    <!-- Navigation -->
     <div class="nav">
-      <button class="active" onclick="showSection('dashboard')">📊 Dashboard</button>
-      <button onclick="showSection('tools')">🛠 Tools</button>
-      <button onclick="showSection('ai')">🤖 AI Providers</button>
-      <button onclick="showSection('github')">🔗 GitHub</button>
-      <button onclick="showSection('config')">⚙️ Configuration</button>
-      <button onclick="showSection('logs')">📝 Logs</button>
+      <button class="active" onclick="showSection('dashboard')">Dashboard</button>
+      <button onclick="showSection('tools')">Tools</button>
+      <button onclick="showSection('ai')">AI</button>
+      <button onclick="showSection('ads')">Ads</button>
+      <button onclick="showSection('downloads')">Downloads</button>
+      <button onclick="showSection('github')">GitHub</button>
+      <button onclick="showSection('config')">Config</button>
+      <button onclick="showSection('logs')">Logs</button>
     </div>
-
-    <!-- DASHBOARD -->
-    <div id="dashboard" class="section">
-      <div class="stats">
-        <div class="stat-card">
-          <div class="value" id="stat-users">0</div>
-          <div class="label">Total Users</div>
+    
+    <!-- Content -->
+    <div class="content">
+      <!-- Dashboard -->
+      <div id="dashboard" class="section active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="value" id="stat-users">-</div>
+            <div class="label">Users</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="stat-tools">-</div>
+            <div class="label">Tools</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="stat-providers">-</div>
+            <div class="label">Providers</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="stat-downloads">-</div>
+            <div class="label">Downloads</div>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="value" id="stat-tools">0</div>
-          <div class="label">Tools</div>
+        
+        <div class="card" style="margin-top: 16px;">
+          <h2>System Health</h2>
+          <div class="toggle">
+            <span class="toggle-label">Bot Status</span>
+            <span class="badge badge-success">Online</span>
+          </div>
+          <div class="toggle">
+            <span class="toggle-label">Web Server</span>
+            <span class="badge badge-success" id="web-status">Checking...</span>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="value" id="stat-incidents">0</div>
-          <div class="label">Incidents</div>
-        </div>
-        <div class="stat-card">
-          <div class="value" id="stat-warnings">0</div>
-          <div class="label">Warnings</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TOOLS -->
-    <div id="tools" class="section hidden">
-      <div class="card">
-        <h2>Manage Tools</h2>
-        <button class="btn btn-success" onclick="showAddTool()">+ Add Tool</button>
-        <table class="table" style="margin-top: 15px;">
-          <thead>
-            <tr><th>Name</th><th>Command</th><th>Category</th><th>Status</th><th>Actions</th></tr>
-          </thead>
-          <tbody id="tools-list"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- AI PROVIDERS -->
-    <div id="ai" class="section hidden">
-      <div class="card">
-        <h2>AI Providers</h2>
-        <div id="ai-providers-list"></div>
-        <button class="btn btn-success" onclick="showAddProvider()">+ Add Provider</button>
-      </div>
-    </div>
-
-    <!-- GITHUB -->
-    <div id="github" class="section hidden">
-      <div class="card">
-        <h2>GitHub Repositories</h2>
-        <button class="btn btn-success" onclick="showAddGitHub()">+ Add Repository</button>
-      </div>
-    </div>
-
-    <!-- CONFIGURATION -->
-    <div id="config" class="section hidden">
-      <div class="card">
-        <h2>Configuration</h2>
-        <div class="form-group">
-          <label>Smart Group AI</label>
-          <select id="cfg-smart-ai" onchange="saveConfig('groupAI.enabled', this.value)">
-            <option value="true">Enabled</option>
-            <option value="false">Disabled</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Feature Flags</label>
-          <div id="feature-flags"></div>
+        
+        <div class="card">
+          <h2>Recent Activity</h2>
+          <div id="recent-activity">
+            <div class="empty"><div class="empty-icon">📊</div><p>No recent activity</p></div>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- LOGS -->
-    <div id="logs" class="section hidden">
-      <div class="card">
-        <h2>Audit Log</h2>
-        <table class="table">
-          <thead>
-            <tr><th>Time</th><th>Action</th><th>Key</th><th>Admin</th></tr>
-          </thead>
-          <tbody id="audit-log"></tbody>
-        </table>
+      
+      <!-- Tools -->
+      <div id="tools" class="section">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="margin: 0;">Manage Tools</h2>
+            <button class="btn btn-small btn-success" onclick="showAddTool()">+ Add</button>
+          </div>
+          <div id="tools-list">
+            <div class="loading"><div class="spinner"></div>Loading tools...</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- AI Providers -->
+      <div id="ai" class="section">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="margin: 0;">AI Providers</h2>
+            <button class="btn btn-small btn-success" onclick="showAddProvider()">+ Add</button>
+          </div>
+          <div id="ai-providers-list">
+            <div class="loading"><div class="spinner"></div>Loading providers...</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Ads -->
+      <div id="ads" class="section">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="margin: 0;">Advertisements</h2>
+            <button class="btn btn-small btn-success" onclick="showAddAd()">+ Add Ad</button>
+          </div>
+          <div id="ads-list">
+            <div class="loading"><div class="spinner"></div>Loading ads...</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Downloads -->
+      <div id="downloads" class="section">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="margin: 0;">Downloads</h2>
+            <button class="btn btn-small btn-success" onclick="showAddDownload()">+ Add</button>
+          </div>
+          <div id="downloads-list">
+            <div class="loading"><div class="spinner"></div>Loading downloads...</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- GitHub -->
+      <div id="github" class="section">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="margin: 0;">GitHub Repos</h2>
+            <button class="btn btn-small btn-success" onclick="showAddGitHub()">+ Connect</button>
+          </div>
+          <div id="github-list">
+            <div class="loading"><div class="spinner"></div>Loading repos...</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Configuration -->
+      <div id="config" class="section">
+        <div class="card">
+          <h2>Feature Flags</h2>
+          <div id="feature-flags">
+            <div class="loading"><div class="spinner"></div>Loading config...</div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h2>Group AI Settings</h2>
+          <div class="form-group">
+            <label>Response Threshold (0-1)</label>
+            <input type="number" id="cfg-threshold" step="0.1" min="0" max="1" value="0.7">
+          </div>
+          <div class="form-group">
+            <label>Mention Required</label>
+            <select id="cfg-mention" onchange="saveConfig('groupAI.mentionRequired', this.value === 'true')">
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Logs -->
+      <div id="logs" class="section">
+        <div class="card">
+          <h2>Audit Log</h2>
+          <div id="audit-log">
+            <div class="loading"><div class="spinner"></div>Loading logs...</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-
+  
+  <!-- Modals -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal(event)">
+    <div class="modal" id="modal-content"></div>
+  </div>
+  
   <script>
-    const API_BASE = window.location.origin;
+    // Telegram WebApp initialization
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
     
-    async function apiRequest(endpoint, options = {}) {
-      const res = await fetch(`${API_BASE}/api${endpoint}`, {
-        headers: { 'Content-Type': 'application/json' },
-        ...options
-      });
-      return res.json();
+    // API base
+    const API_BASE = window.location.origin;
+    const initDate = tg.initData || '';
+    
+    // Auth header
+    function getAuthHeaders() {
+      return { 'Content-Type': 'application/json', 'x-telegram-init-data': initDate };
     }
-
+    
+    // Show section
     function showSection(name) {
-      document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
-      document.getElementById(name).classList.remove('hidden');
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(name).classList.add('active');
       document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
       event.target.classList.add('active');
-      loadDashboard();
+      loadSectionData(name);
     }
-
+    
+    // Load section data
+    async function loadSectionData(section) {
+      switch(section) {
+        case 'dashboard': await loadDashboard(); break;
+        case 'tools': await loadTools(); break;
+        case 'ai': await loadAIProviders(); break;
+        case 'ads': await loadAds(); break;
+        case 'downloads': await loadDownloads(); break;
+        case 'github': await loadGitHub(); break;
+        case 'config': await loadConfig(); break;
+        case 'logs': await loadAuditLog(); break;
+      }
+    }
+    
+    // API request helper
+    async function apiRequest(endpoint, options = {}) {
+      const res = await fetch(`${API_BASE}/api${endpoint}`, {
+        headers: getAuthHeaders(),
+        ...options
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }
+    
+    // Toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      toast.style.borderColor = type === 'error' ? 'var(--danger)' : 'var(--success)';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+    
+    // Dashboard
     async function loadDashboard() {
       try {
-        const stats = await apiRequest('/stats');
-        document.getElementById('stat-users').textContent = stats.users || 0;
-        document.getElementById('stat-tools').textContent = stats.tools || 0;
-        document.getElementById('stat-incidents').textContent = stats.incidents || 0;
-        document.getElementById('stat-warnings').textContent = stats.warnings || 0;
+        const stats = await apiRequest('/dashboard/stats');
+        document.getElementById('stat-users').textContent = stats.totalUsers || 0;
+        document.getElementById('stat-tools').textContent = stats.totalTools || 0;
+        document.getElementById('stat-providers').textContent = `${stats.onlineProviders}/${stats.totalProviders}`;
+        document.getElementById('stat-downloads').textContent = stats.totalDownloads || 0;
         
-        if (document.getElementById('tools').classList.contains('hidden') === false) {
-          loadTools();
-        }
-        if (document.getElementById('ai').classList.contains('hidden') === false) {
-          loadAIProviders();
-        }
-        if (document.getElementById('logs').classList.contains('hidden') === false) {
-          loadAuditLog();
+        // Check web status
+        try {
+          const health = await fetch(`${API_BASE}/health`).then(r => r.json());
+          document.getElementById('web-status').textContent = 'Online';
+          document.getElementById('web-status').className = 'badge badge-success';
+        } catch {
+          document.getElementById('web-status').textContent = 'Offline';
+          document.getElementById('web-status').className = 'badge badge-danger';
         }
       } catch (e) {
         console.error('Failed to load dashboard:', e);
       }
     }
-
+    
+    // Tools
     async function loadTools() {
       try {
         const tools = await apiRequest('/tools');
-        const tbody = document.getElementById('tools-list');
-        tbody.innerHTML = tools.map(t => `
-          <tr>
-            <td>${t.name}</td>
-            <td>/${t.command}</td>
-            <td>${t.category || 'N/A'}</td>
-            <td><span class="badge badge-success">${t.status || 'active'}</span></td>
-            <td><button class="btn btn-danger" onclick="deleteTool('${t.id}')">Delete</button></td>
-          </tr>
-        `).join('');
+        const container = document.getElementById('tools-list');
+        if (tools.length === 0) {
+          container.innerHTML = '<div class="empty"><div class="empty-icon">🛠️</div><p>No tools added yet</p></div>';
+          return;
+        }
+        container.innerHTML = `<div class="table-container"><table>
+          <thead><tr><th>Name</th><th>Command</th><th>Category</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>${tools.map(t => `
+            <tr>
+              <td>${t.name}</td>
+              <td>/${t.command}</td>
+              <td>${t.category || '-'}</td>
+              <td><span class="badge ${t.enabled !== false ? 'badge-success' : 'badge-danger'}">${t.enabled !== false ? 'Active' : 'Disabled'}</span></td>
+              <td>
+                <button class="btn btn-small" onclick="editTool('${t.id}')">Edit</button>
+                <button class="btn btn-small btn-danger" onclick="deleteTool('${t.id}')">Delete</button>
+              </td>
+            </tr>
+          `).join('')}</tbody>
+        </table></div>`;
       } catch (e) {
-        console.error('Failed to load tools:', e);
+        document.getElementById('tools-list').innerHTML = `<div class="empty"><p>Error loading tools</p></div>`;
       }
     }
-
+    
+    function showAddTool() {
+      showModal(`
+        <h3>Add New Tool</h3>
+        <div class="form-group"><label>Name</label><input id="tool-name" placeholder="My Tool"></div>
+        <div class="form-group"><label>Command</label><input id="tool-command" placeholder="my_tool"></div>
+        <div class="form-group"><label>Category</label><input id="tool-category" placeholder="Cybersecurity"></div>
+        <div class="form-group"><label>Description</label><textarea id="tool-desc" rows="3"></textarea></div>
+        <div class="modal-actions">
+          <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-success" onclick="saveTool()">Save</button>
+        </div>
+      `);
+    }
+    
+    async function saveTool() {
+      const name = document.getElementById('tool-name').value;
+      const command = document.getElementById('tool-command').value;
+      const category = document.getElementById('tool-category').value;
+      const description = document.getElementById('tool-desc').value;
+      
+      if (!name || !command) { showToast('Name and command are required', 'error'); return; }
+      
+      try {
+        await apiRequest('/tools', { method: 'POST', body: JSON.stringify({ name, command, category, description }) });
+        closeModal();
+        loadTools();
+        showToast('Tool added successfully');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    async function deleteTool(id) {
+      if (!confirm('Delete this tool?')) return;
+      try {
+        await apiRequest(`/tools/${id}`, { method: 'DELETE' });
+        loadTools();
+        showToast('Tool deleted');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    async function editTool(id) {
+      const tools = await apiRequest('/tools');
+      const tool = tools.find(t => t.id === id);
+      if (!tool) return;
+      
+      showModal(`
+        <h3>Edit Tool</h3>
+        <div class="form-group"><label>Name</label><input id="edit-tool-name" value="${tool.name}"></div>
+        <div class="form-group"><label>Command</label><input id="edit-tool-command" value="${tool.command}"></div>
+        <div class="form-group"><label>Category</label><input id="edit-tool-category" value="${tool.category || ''}"></div>
+        <div class="form-group"><label>Description</label><textarea id="edit-tool-desc" rows="3">${tool.description || ''}</textarea></div>
+        <div class="toggle">
+          <span class="toggle-label">Enabled</span>
+          <label class="switch"><input type="checkbox" id="edit-tool-enabled" ${tool.enabled !== false ? 'checked' : ''}><span class="slider"></span></label>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-success" onclick="updateTool('${id}')">Update</button>
+        </div>
+      `);
+    }
+    
+    async function updateTool(id) {
+      const updates = {
+        name: document.getElementById('edit-tool-name').value,
+        command: document.getElementById('edit-tool-command').value,
+        category: document.getElementById('edit-tool-category').value,
+        description: document.getElementById('edit-tool-desc').value,
+        enabled: document.getElementById('edit-tool-enabled').checked
+      };
+      try {
+        await apiRequest(`/tools/${id}`, { method: 'PUT', body: JSON.stringify(updates) });
+        closeModal();
+        loadTools();
+        showToast('Tool updated');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    // AI Providers
     async function loadAIProviders() {
       try {
         const providers = await apiRequest('/ai/providers');
         const container = document.getElementById('ai-providers-list');
+        if (providers.length === 0) {
+          container.innerHTML = '<div class="empty"><div class="empty-icon">🤖</div><p>No AI providers configured</p></div>';
+          return;
+        }
         container.innerHTML = providers.map(p => `
-          <div style="background: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
-            <strong>${p.name}</strong> - ${p.baseUrl}<br>
-            <small>Health: ${p.health || 'unknown'} | Priority: ${p.priority}</small>
+          <div style="background: var(--bg-primary); padding: 14px; border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong>${p.name}</strong>
+              <span class="badge ${p.enabled ? 'badge-success' : 'badge-danger'}">${p.health === 'online' ? 'Online' : p.health || 'Unknown'}</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">
+              ${p.baseUrl}<br>
+              Priority: ${p.priority || 0} | Models: ${(p.models || []).length}
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+              <button class="btn btn-small" onclick="testProvider('${p.id}')">Test</button>
+              <button class="btn btn-small" onclick="refreshModels('${p.id}')">Refresh</button>
+              <button class="btn btn-small btn-danger" onclick="deleteProvider('${p.id}')">Delete</button>
+            </div>
           </div>
-        `).join('') || '<p>No providers configured</p>';
+        `).join('');
       } catch (e) {
-        console.error('Failed to load providers:', e);
+        document.getElementById('ai-providers-list').innerHTML = `<div class="empty"><p>Error loading providers</p></div>`;
       }
     }
-
+    
+    function showAddProvider() {
+      showModal(`
+        <h3>Add AI Provider</h3>
+        <div class="form-group"><label>Provider Name</label><input id="prov-name" placeholder="OpenAI Compatible"></div>
+        <div class="form-group"><label>Base URL / Endpoint</label><input id="prov-url" placeholder="https://api.openai.com/v1"></div>
+        <div class="form-group"><label>API Key</label><input id="prov-key" type="password" placeholder="sk-..."></div>
+        <div class="form-group"><label>Priority (lower = higher priority)</label><input id="prov-priority" type="number" value="0"></div>
+        <div class="modal-actions">
+          <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-success" onclick="saveProvider()">Save</button>
+        </div>
+      `);
+    }
+    
+    async function saveProvider() {
+      const name = document.getElementById('prov-name').value;
+      const baseUrl = document.getElementById('prov-url').value;
+      const apiKey = document.getElementById('prov-key').value;
+      const priority = parseInt(document.getElementById('prov-priority').value) || 0;
+      
+      if (!name || !baseUrl || !apiKey) { showToast('All fields are required', 'error'); return; }
+      
+      try {
+        await apiRequest('/ai/providers', { method: 'POST', body: JSON.stringify({ name, baseUrl, apiKey, priority }) });
+        closeModal();
+        loadAIProviders();
+        showToast('Provider added successfully');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    async function testProvider(id) {
+      showToast('Testing connection...', 'info');
+      try {
+        const result = await apiRequest(`/ai/providers/${id}/test`, { method: 'POST' });
+        showToast(result.success ? 'Connection successful!' : 'Connection failed');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    async function refreshModels(id) {
+      showToast('Refreshing models...');
+      try {
+        const models = await apiRequest(`/ai/providers/${id}/models`, { method: 'POST' });
+        showToast(`Found ${models.length} models`);
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    async function deleteProvider(id) {
+      if (!confirm('Delete this provider?')) return;
+      try {
+        await apiRequest(`/ai/providers/${id}`, { method: 'DELETE' });
+        loadAIProviders();
+        showToast('Provider deleted');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    // Ads
+    async function loadAds() {
+      try {
+        const ads = await apiRequest('/ads');
+        const container = document.getElementById('ads-list');
+        if (ads.length === 0) {
+          container.innerHTML = '<div class="empty"><div class="empty-icon">📢</div><p>No advertisements configured</p></div>';
+          return;
+        }
+        container.innerHTML = ads.map(a => `
+          <div style="background: var(--bg-primary); padding: 14px; border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong>${a.name}</strong>
+              <span class="badge ${a.enabled ? 'badge-success' : 'badge-danger'}">${a.enabled ? 'Active' : 'Disabled'}</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">
+              Provider: ${a.provider} | Target: ${a.targetUrl || '-'}
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+              <button class="btn btn-small" onclick="editAd('${a.id}')">Edit</button>
+              <button class="btn btn-small btn-danger" onclick="deleteAd('${a.id}')">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        document.getElementById('ads-list').innerHTML = `<div class="empty"><p>Error loading ads</p></div>`;
+      }
+    }
+    
+    function showAddAd() {
+      showModal(`
+        <h3>Add Advertisement</h3>
+        <div class="form-group"><label>Name</label><input id="ad-name" placeholder="Summer Sale"></div>
+        <div class="form-group"><label>Provider</label>
+          <select id="ad-provider">
+            <option value="telegram_ads">Telegram Ads</option>
+            <option value="custom">Custom URL</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Target URL</label><input id="ad-url" placeholder="https://example.com"></div>
+        <div class="modal-actions">
+          <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-success" onclick="saveAd()">Save</button>
+        </div>
+      `);
+    }
+    
+    async function saveAd() {
+      const name = document.getElementById('ad-name').value;
+      const provider = document.getElementById('ad-provider').value;
+      const targetUrl = document.getElementById('ad-url').value;
+      
+      if (!name || !targetUrl) { showToast('Name and URL are required', 'error'); return; }
+      
+      try {
+        await apiRequest('/ads', { method: 'POST', body: JSON.stringify({ name, provider, targetUrl }) });
+        closeModal();
+        loadAds();
+        showToast('Ad added');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    async function deleteAd(id) {
+      if (!confirm('Delete this ad?')) return;
+      try {
+        await apiRequest(`/ads/${id}`, { method: 'DELETE' });
+        loadAds();
+        showToast('Ad deleted');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    // Downloads
+    async function loadDownloads() {
+      try {
+        const downloads = await apiRequest('/downloads');
+        const container = document.getElementById('downloads-list');
+        if (downloads.length === 0) {
+          container.innerHTML = '<div class="empty"><div class="empty-icon">⬇️</div><p>No downloads configured</p></div>';
+          return;
+        }
+        container.innerHTML = downloads.map(d => `
+          <div style="background: var(--bg-primary); padding: 14px; border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong>${d.name}</strong>
+              <span class="badge ${d.enabled ? 'badge-success' : 'badge-danger'}">${d.enabled ? 'Active' : 'Disabled'}</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px; word-break: break-all;">${d.url}</div>
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+              <button class="btn btn-small" onclick="editDownload('${d.id}')">Edit</button>
+              <button class="btn btn-small btn-danger" onclick="deleteDownload('${d.id}')">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        document.getElementById('downloads-list').innerHTML = `<div class="empty"><p>Error loading downloads</p></div>`;
+      }
+    }
+    
+    function showAddDownload() {
+      showModal(`
+        <h3>Add Download Link</h3>
+        <div class="form-group"><label>Name</label><input id="dl-name" placeholder="My Download"></div>
+        <div class="form-group"><label>URL</label><input id="dl-url" placeholder="https://example.com/file.zip"></div>
+        <div class="form-group"><label>Description</label><textarea id="dl-desc" rows="2"></textarea></div>
+        <div class="modal-actions">
+          <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-success" onclick="saveDownload()">Save</button>
+        </div>
+      `);
+    }
+    
+    async function saveDownload() {
+      const name = document.getElementById('dl-name').value;
+      const url = document.getElementById('dl-url').value;
+      const description = document.getElementById('dl-desc').value;
+      
+      if (!name || !url) { showToast('Name and URL are required', 'error'); return; }
+      
+      try {
+        await apiRequest('/downloads', { method: 'POST', body: JSON.stringify({ name, url, description }) });
+        closeModal();
+        loadDownloads();
+        showToast('Download added');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    async function deleteDownload(id) {
+      if (!confirm('Delete this download?')) return;
+      try {
+        await apiRequest(`/downloads/${id}`, { method: 'DELETE' });
+        loadDownloads();
+        showToast('Download deleted');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    // GitHub
+    async function loadGitHub() {
+      try {
+        const repos = await apiRequest('/github/repos');
+        const container = document.getElementById('github-list');
+        if (repos.length === 0) {
+          container.innerHTML = '<div class="empty"><div class="empty-icon">🐙</div><p>No GitHub repositories connected</p></div>';
+          return;
+        }
+        container.innerHTML = repos.map(r => `
+          <div style="background: var(--bg-primary); padding: 14px; border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border);">
+            <strong>${r.owner}/${r.name}</strong>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">
+              ${r.repositories?.length || 0} repos | ${r.enabled ? 'Active' : 'Disabled'}
+            </div>
+            <button class="btn btn-small btn-danger" style="margin-top: 10px;" onclick="deleteGitHub('${r.id}')">Remove</button>
+          </div>
+        `).join('');
+      } catch (e) {
+        document.getElementById('github-list').innerHTML = `<div class="empty"><p>Error loading GitHub repos</p></div>`;
+      }
+    }
+    
+    function showAddGitHub() {
+      showModal(`
+        <h3>Add GitHub Connection</h3>
+        <div class="form-group"><label>Owner/Organization</label><input id="gh-owner" placeholder="opx-team"></div>
+        <div class="form-group"><label>Personal Access Token</label><input id="gh-token" type="password" placeholder="ghp_..."></div>
+        <div class="modal-actions">
+          <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-success" onclick="saveGitHub()">Connect</button>
+        </div>
+      `);
+    }
+    
+    async function saveGitHub() {
+      const owner = document.getElementById('gh-owner').value;
+      const token = document.getElementById('gh-token').value;
+      
+      if (!owner || !token) { showToast('Owner and token are required', 'error'); return; }
+      
+      try {
+        await apiRequest('/github/repos', { method: 'POST', body: JSON.stringify({ owner, token }) });
+        closeModal();
+        loadGitHub();
+        showToast('GitHub connected');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    async function deleteGitHub(id) {
+      if (!confirm('Remove this GitHub connection?')) return;
+      try {
+        await apiRequest(`/github/repos/${id}`, { method: 'DELETE' });
+        loadGitHub();
+        showToast('GitHub removed');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    // Config
+    async function loadConfig() {
+      try {
+        const config = await apiRequest('/config');
+        
+        // Feature flags
+        const flags = config.featureFlags || {};
+        document.getElementById('feature-flags').innerHTML = Object.entries(flags).map(([key, value]) => `
+          <div class="toggle">
+            <span class="toggle-label">${key}</span>
+            <label class="switch">
+              <input type="checkbox" ${value ? 'checked' : ''} onchange="toggleFlag('${key}', this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+        `).join('');
+        
+        // Group AI settings
+        const groupAI = config.groupAI || {};
+        document.getElementById('cfg-threshold').value = groupAI.responseThreshold || 0.7;
+        document.getElementById('cfg-mention').value = (groupAI.mentionRequired !== false).toString();
+        
+      } catch (e) {
+        document.getElementById('feature-flags').innerHTML = '<div class="empty"><p>Error loading config</p></div>';
+      }
+    }
+    
+    async function toggleFlag(flag, enabled) {
+      try {
+        await apiRequest(`/config/featureFlags.${flag}`, { 
+          method: 'PUT', 
+          body: JSON.stringify({ value: enabled }) 
+        });
+        showToast(enabled ? 'Enabled' : 'Disabled');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    async function saveConfig(key, value) {
+      try {
+        await apiRequest(`/config/${key}`, { method: 'PUT', body: JSON.stringify({ value }) });
+        showToast('Configuration saved');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    
+    // Audit Log
     async function loadAuditLog() {
       try {
         const logs = await apiRequest('/audit');
-        const tbody = document.getElementById('audit-log');
-        tbody.innerHTML = logs.slice(0, 50).map(l => `
-          <tr>
-            <td>${new Date(l.timestamp).toLocaleString()}</td>
-            <td>${l.action}</td>
-            <td>${l.key}</td>
-            <td>${l.adminId}</td>
-          </tr>
-        `).join('') || '<tr><td colspan="4">No logs</td></tr>';
+        const container = document.getElementById('audit-log');
+        if (logs.length === 0) {
+          container.innerHTML = '<div class="empty"><div class="empty-icon">📝</div><p>No audit logs</p></div>';
+          return;
+        }
+        container.innerHTML = `<div class="table-container"><table>
+          <thead><tr><th>Time</th><th>Action</th><th>Key</th></tr></thead>
+          <tbody>${logs.slice(0, 50).map(l => `
+            <tr>
+              <td>${new Date(l.timestamp).toLocaleString()}</td>
+              <td><span class="badge badge-info">${l.action}</span></td>
+              <td style="font-size: 11px; color: var(--text-secondary);">${l.key}</td>
+            </tr>
+          `).join('')}</tbody>
+        </table></div>`;
       } catch (e) {
-        console.error('Failed to load logs:', e);
+        document.getElementById('audit-log').innerHTML = `<div class="empty"><p>Error loading logs</p></div>`;
       }
     }
-
-    function showAddTool() {
-      const name = prompt('Tool name:');
-      if (!name) return;
-      const command = prompt('Command (e.g., my_tool):');
-      if (!command) return;
-      const category = prompt('Category (e.g., Cybersecurity):', 'Uncategorized');
-      
-      apiRequest('/tools', {
-        method: 'POST',
-        body: JSON.stringify({ name, command, category })
-      }).then(() => loadTools());
+    
+    // Modal
+    function showModal(content) {
+      document.getElementById('modal-content').innerHTML = content;
+      document.getElementById('modal-overlay').classList.remove('hidden');
     }
-
-    async function deleteTool(id) {
-      if (!confirm('Delete this tool?')) return;
-      await apiRequest(`/tools/${id}`, { method: 'DELETE' });
-      loadTools();
+    
+    function closeModal(e) {
+      if (e && e.target !== e.currentTarget) return;
+      document.getElementById('modal-overlay').classList.add('hidden');
     }
-
-    function showAddProvider() {
-      const name = prompt('Provider name:');
-      if (!name) return;
-      const baseUrl = prompt('Base URL (e.g., https://api.openai.com/v1):');
-      if (!baseUrl) return;
-      const apiKey = prompt('API Key:');
-      if (!apiKey) return;
-      
-      apiRequest('/ai/providers', {
-        method: 'POST',
-        body: JSON.stringify({ name, baseUrl, apiKey })
-      }).then(() => loadAIProviders());
-    }
-
-    function showAddGitHub() {
-      const owner = prompt('GitHub owner/organization:');
-      if (!owner) return;
-      const repo = prompt('Repository name:');
-      if (!repo) return;
-      const token = prompt('Personal Access Token:');
-      
-      apiRequest('/github/repos', {
-        method: 'POST',
-        body: JSON.stringify({ owner, name: repo, token })
-      }).then(() => alert('Repository added!'));
-    }
-
+    
     // Initialize
     loadDashboard();
   </script>
