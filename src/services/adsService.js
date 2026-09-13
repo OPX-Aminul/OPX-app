@@ -72,6 +72,14 @@ class AdsService {
     return removed
   }
 
+  getAll() {
+    return [...this.ads]
+  }
+
+  async add(adData) {
+    return this.addAd(adData)
+  }
+
   getActiveAds() {
     return this.ads.filter(ad => ad.enabled)
   }

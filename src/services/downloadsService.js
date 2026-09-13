@@ -55,6 +55,30 @@ class DownloadsService {
     }
   }
 
+  getAll() {
+    return [...this.downloads]
+  }
+
+  async add(data) {
+    return this.addDownload(data)
+  }
+
+  async update(id, updates) {
+    const index = this.downloads.findIndex(d => d.id === id)
+    if (index === -1) throw new Error('Download not found.')
+    this.downloads[index] = { ...this.downloads[index], ...updates }
+    await this.save()
+    return this.downloads[index]
+  }
+
+  async remove(id) {
+    const index = this.downloads.findIndex(d => d.id === id)
+    if (index === -1) throw new Error('Download not found.')
+    const removed = this.downloads.splice(index, 1)[0]
+    await this.save()
+    return removed
+  }
+
   async addDownload(data) {
     const download = {
       id: data.id || `dl_${Date.now()}`,

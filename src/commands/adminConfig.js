@@ -5,17 +5,16 @@ const logger = require('../utils/logger')
 let configFlow = {}
 
 const handleAdminConfig = async (ctx) => {
-  const config = configService.config
+  const config = configService.config || {}
   
-  let msg = '⚙️ ADMIN CONFIGURATION\n\n'
+  let msg = 'ADMIN CONFIGURATION\n\n'
   msg += 'Manage all runtime settings here.\n\n'
   
-  // Summary
-  msg += `🤖 AI Providers: ${config.aiProviders.length}\n`
-  msg += `🔗 GitHub Connections: ${config.github.connections.length}\n`
-  msg += `📢 Ads Systems: ${Object.keys(config.ads).length}\n`
-  msg += `🛡 Smart Group AI: ${config.groupAI.enabled ? 'Enabled' : 'Disabled'}\n`
-  msg += `📝 Moderation: ${config.moderation.autoModeration ? 'Auto' : 'Manual'}\n`
+  msg += `AI Providers: ${(config.aiProviders || []).length}\n`
+  msg += `GitHub Connections: ${(config.github?.connections || []).length}\n`
+  msg += `Ads Systems: ${Object.keys(config.ads || {}).length}\n`
+  msg += `Smart Group AI: ${config.groupAI?.enabled ? 'Enabled' : 'Disabled'}\n`
+  msg += `Moderation: ${config.moderation?.autoModeration ? 'Auto' : 'Manual'}\n`
   
   await ctx.reply(msg, {
     reply_markup: {
@@ -34,7 +33,7 @@ const handleAdminConfig = async (ctx) => {
 }
 
 const handleAIProvidersList = async (ctx) => {
-  const providers = configService.config.aiProviders
+  const providers = configService.config?.aiProviders || []
   let msg = '🤖 AI PROVIDERS\n\n'
   
   if (providers.length === 0) {

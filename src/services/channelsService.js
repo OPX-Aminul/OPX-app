@@ -36,6 +36,14 @@ class ChannelsService {
     await fs.writeFile(POSTS_FILE, JSON.stringify(this.scheduledPosts, null, 2), 'utf8')
   }
 
+  getAll() {
+    return [...this.channels]
+  }
+
+  async add(channelData) {
+    return this.addChannel(channelData)
+  }
+
   async addChannel(channelData) {
     const channel = {
       id: channelData.id || `ch_${Date.now()}`,

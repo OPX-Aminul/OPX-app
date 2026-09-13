@@ -1,5 +1,12 @@
 require('dotenv').config()
 
+function getPublicUrl() {
+  const raw = process.env.WEB_APP_URL
+    || process.env.RENDER_EXTERNAL_URL
+    || (process.env.RENDER_EXTERNAL_HOSTNAME ? `https://${process.env.RENDER_EXTERNAL_HOSTNAME}` : '')
+  return String(raw || '').replace(/\/$/, '')
+}
+
 module.exports = {
   BOT_TOKEN: process.env.BOT_TOKEN || '',
   OWNER_ID: process.env.OWNER_ID ? parseInt(process.env.OWNER_ID, 10) : null,
@@ -12,5 +19,7 @@ module.exports = {
   AI_API_KEY: process.env.AI_API_KEY || '',
   AI_BASE_URL: process.env.AI_BASE_URL || 'https://api.openai.com/v1',
   ADMIN_PANEL_SECRET: process.env.ADMIN_PANEL_SECRET || '',
-  ADMIN_PORT: process.env.ADMIN_PORT || 3001,
+  ADMIN_PORT: process.env.ADMIN_PORT || process.env.PORT || 3001,
+  SECRET_KEY: process.env.SECRET_KEY || 'default-secret',
+  getPublicUrl,
 }

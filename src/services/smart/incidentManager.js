@@ -83,6 +83,10 @@ class IncidentManager {
     return this.incidents[index]
   }
 
+  async resolve(id) {
+    return this.updateStatus(id, 'RESOLVED')
+  }
+
   getOpenIncidents() {
     return this.incidents.filter(i => i.status === 'OPEN' || i.status === 'INVESTIGATING')
   }

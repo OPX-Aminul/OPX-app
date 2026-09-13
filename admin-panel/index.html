@@ -230,14 +230,14 @@
     
     <!-- Navigation -->
     <div class="nav">
-      <button class="active" onclick="showSection('dashboard')">Dashboard</button>
-      <button onclick="showSection('tools')">Tools</button>
-      <button onclick="showSection('ai')">AI</button>
-      <button onclick="showSection('ads')">Ads</button>
-      <button onclick="showSection('downloads')">Downloads</button>
-      <button onclick="showSection('github')">GitHub</button>
-      <button onclick="showSection('config')">Config</button>
-      <button onclick="showSection('logs')">Logs</button>
+      <button class="active" onclick="showSection('dashboard', this)">Dashboard</button>
+      <button onclick="showSection('tools', this)">Tools</button>
+      <button onclick="showSection('ai', this)">AI</button>
+      <button onclick="showSection('ads', this)">Ads</button>
+      <button onclick="showSection('downloads', this)">Downloads</button>
+      <button onclick="showSection('github', this)">GitHub</button>
+      <button onclick="showSection('config', this)">Config</button>
+      <button onclick="showSection('logs', this)">Logs</button>
     </div>
     
     <!-- Content -->
@@ -391,26 +391,27 @@
   </div>
   
   <script>
-    // Telegram WebApp initialization
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-    tg.ready();
-    
-    // API base
-    const API_BASE = window.location.origin;
-    const initDate = tg.initData || '';
-    
-    // Auth header
-    function getAuthHeaders() {
-      return { 'Content-Type': 'application/json', 'x-telegram-init-data': initDate };
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    if (tg) {
+      try { tg.expand(); tg.ready(); } catch (e) {}
     }
     
-    // Show section
-    function showSection(name) {
+    const API_BASE = window.location.origin;
+    const initData = (tg && tg.initData) || '';
+    
+    function getAuthHeaders() {
+      const headers = { 'Content-Type': 'application/json' };
+      if (initData) headers['x-telegram-init-data'] = initData;
+      return headers;
+    }
+    
+    function showSection(name, btn) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById(name).classList.add('active');
+      const el = document.getElementById(name);
+      if (el) el.classList.add('active');
       document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
+      if (btn) btn.classList.add('active');
+      else if (typeof event !== 'undefined' && event && event.target) event.target.classList.add('active');
       loadSectionData(name);
     }
     

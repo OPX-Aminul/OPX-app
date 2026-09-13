@@ -35,9 +35,12 @@ const helpText = `📚 HELP & COMMANDS
   /settings - Bot settings`
 
 const handleHelp = async (ctx) => {
-  await ctx.reply(helpText, {
-    reply_markup: { inline_keyboard: [[{ text: '🏠 Back', callback_data: 'main_menu' }]] }
-  })
+  const markup = { reply_markup: { inline_keyboard: [[{ text: 'Home', callback_data: 'main_menu' }]] } }
+  if (ctx.callbackQuery) {
+    await ctx.editMessageText(helpText, markup).catch(() => ctx.reply(helpText, markup))
+  } else {
+    await ctx.reply(helpText, markup)
+  }
   logger.info(`User ${ctx.from?.id} viewed help`)
 }
 
