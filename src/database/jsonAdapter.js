@@ -11,17 +11,13 @@ class JsonAdapter extends DatabaseAdapter {
       fs.mkdirSync(this.dataDir, { recursive: true })
     }
   }
-
-  _filePath(key) {
-    return path.join(this.dataDir, `${key}.json`)
-  }
+  _filePath(key) { return path.join(this.dataDir, `${key}.json`) }
 
   async get(key) {
     try {
       const filePath = this._filePath(key)
       if (!fs.existsSync(filePath)) return null
-      const raw = fs.readFileSync(filePath, 'utf8')
-      return JSON.parse(raw)
+      return JSON.parse(fs.readFileSync(filePath, 'utf8'))
     } catch (err) {
       logger.error(`[JSON DB] Error reading ${key}:`, err.message)
       return null
@@ -30,8 +26,7 @@ class JsonAdapter extends DatabaseAdapter {
 
   async set(key, value) {
     try {
-      const filePath = this._filePath(key)
-      fs.writeFileSync(filePath, JSON.stringify(value, null, 2), 'utf8')
+      fs.writeFileSync(this._filePath(key), JSON.stringify(value, null, 2), 'utf8')
       return true
     } catch (err) {
       logger.error(`[JSON DB] Error writing ${key}:`, err.message)
@@ -42,10 +37,7 @@ class JsonAdapter extends DatabaseAdapter {
   async delete(key) {
     try {
       const filePath = this._filePath(key)
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath)
-        return true
-      }
+      if (fs.existsSync(filePath)) { fs.unlinkSync(filePath); return true }
       return false
     } catch (err) {
       logger.error(`[JSON DB] Error deleting ${key}:`, err.message)
@@ -58,8 +50,7 @@ class JsonAdapter extends DatabaseAdapter {
       const files = fs.readdirSync(this.dataDir).filter(f => f.endsWith('.json'))
       const result = {}
       for (const file of files) {
-        const key = file.replace('.json', '')
-        result[key] = await this.get(key)
+        result[file.replace('.json', '')] = await this.get(file.replace('.json', ''))
       }
       return result
     } catch (err) {
@@ -68,5 +59,4 @@ class JsonAdapter extends DatabaseAdapter {
     }
   }
 }
-
 module.exports = JsonAdapter

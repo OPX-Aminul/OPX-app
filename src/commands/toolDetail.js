@@ -1,5 +1,4 @@
 const toolsService = require('../services/toolsService')
-const { createToolDetailButtons } = require('../keyboards/buttons')
 const { escapeMarkdown } = require('../utils/helpers')
 const logger = require('../utils/logger')
 
@@ -12,9 +11,9 @@ const handleToolDetail = async (ctx) => {
     return
   }
 
-  let msg = `╭────────────────────╮\n`
+  let msg = '╭────────────────────╮\n'
   msg += `       ${escapeMarkdown(tool.name)}\n`
-  msg += `╰────────────────────╯\n\n`
+  msg += '╰────────────────────╯\n\n'
 
   if (tool.category) msg += `📌 Category:\n${escapeMarkdown(tool.category)}\n\n`
   if (tool.shortDescription) msg += `📝 Description:\n${escapeMarkdown(tool.shortDescription)}\n\n`
@@ -29,10 +28,20 @@ const handleToolDetail = async (ctx) => {
   }
 
   await ctx.editMessageText(msg.trimEnd(), {
-    reply_markup: createToolDetailButtons(tool),
+    reply_markup: buildButtons(tool)
   }).catch(() => {})
-
+  
   logger.info(`User ${ctx.from?.id} viewed tool: ${tool.name}`)
+}
+
+const buildButtons = (tool) => {
+  const kb = []
+  if (tool.github) kb.push([{ text: '🌐 GitHub', url: tool.github }])
+  if (tool.download) kb.push([{ text: '📥 Download', url: tool.download }])
+  if (tool.documentation) kb.push([{ text: '📚 Documentation', url: tool.documentation }])
+  if (tool.website) kb.push([{ text: '🔗 Website', url: tool.website }])
+  kb.push([{ text: '⬅️ Back', callback_data: `tool_list_${tool.id}` }])
+  return { inline_keyboard: kb }
 }
 
 module.exports = handleToolDetail

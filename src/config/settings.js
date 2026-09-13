@@ -7,4 +7,10 @@ module.exports = {
   WELCOME_ENABLED: process.env.WELCOME_ENABLED === 'false' ? false : true,
   WELCOME_DELETE_AFTER: process.env.WELCOME_DELETE_AFTER ? parseInt(process.env.WELCOME_DELETE_AFTER, 10) : 10,
   LOG_LEVEL: process.env.LOG_LEVEL || 'info',
+  AI_PROVIDER: process.env.AI_PROVIDER || 'openai',
+  AI_MODEL: process.env.AI_MODEL || 'gpt-4o-mini',
+  AI_API_KEY: process.env.AI_API_KEY || '',
+  AI_BASE_URL: process.env.AI_BASE_URL || 'https://api.openai.com/v1',
+  ADMIN_PANEL_SECRET: process.env.ADMIN_PANEL_SECRET || '',
+  ADMIN_PORT: process.env.ADMIN_PORT || 3001,
 }

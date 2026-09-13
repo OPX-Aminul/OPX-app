@@ -1,19 +1,11 @@
 const settings = require('../config/settings')
-const logger = require('../utils/logger')
 
-const isAdmin = (ctx) => {
-  const userId = ctx.from?.id
-  return userId === settings.OWNER_ID
-}
-
-const isOwner = (ctx) => {
-  const userId = ctx.from?.id
-  return userId === settings.OWNER_ID
-}
+const isAdmin = (ctx) => ctx.from?.id === settings.OWNER_ID
+const isOwner = (ctx) => ctx.from?.id === settings.OWNER_ID
 
 const ownerOnly = (next) => async (ctx) => {
   if (!settings.OWNER_ID) {
-    await ctx.reply('⚠️ Owner not configured in environment.')
+    await ctx.reply('⚠️ Owner not configured.')
     return
   }
   if (!isOwner(ctx)) {
@@ -25,7 +17,7 @@ const ownerOnly = (next) => async (ctx) => {
 
 const adminOrOwner = (next) => async (ctx) => {
   if (!isAdmin(ctx)) {
-    await ctx.reply('🚫 You do not have permission to use this command.')
+    await ctx.reply('🚫 You do not have permission.')
     return
   }
   return next(ctx)

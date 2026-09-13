@@ -9,7 +9,7 @@ class WelcomeService {
     this.settings = {
       welcomeEnabled: true,
       welcomeDeleteAfter: 10,
-      welcomeMessage: '🎉 Welcome {firstName}!\n\nWelcome to {groupName}.\n\nEnjoy your stay! 🚀',
+      welcomeMessage: '🎉 Welcome {firstName}!\n\nWelcome to {groupName}.\n\nEnjoy your stay! 🚀'
     }
   }
 
@@ -18,8 +18,7 @@ class WelcomeService {
       const raw = await fs.readFile(SETTINGS_FILE, 'utf8')
       const allSettings = JSON.parse(raw)
       this.settings = { ...this.settings, ...allSettings.welcome, ...allSettings }
-    } catch (err) {
-      logger.warn('settings.json not found, using defaults')
+    } catch {
       await this.save()
     }
   }
@@ -35,9 +34,7 @@ class WelcomeService {
     }
   }
 
-  get() {
-    return this.settings
-  }
+  get() { return this.settings }
 
   async enable() {
     this.settings.welcomeEnabled = true

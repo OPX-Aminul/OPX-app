@@ -15,17 +15,15 @@ const handleProfile = async (ctx) => {
   if (profile.email) msg += `📧 Email:\n${escapeMarkdown(profile.email)}\n\n`
 
   const links = []
-  if (profile.links?.github) links.push('🌐 GitHub')
-  if (profile.links?.telegram) links.push('✈️ Telegram')
-  if (profile.links?.website) links.push('🔗 Website')
-  if (profile.links?.linkedin) links.push('💼 LinkedIn')
-  if (profile.links?.twitter) links.push('🐦 Twitter')
+  if (profile.links?.github) links.push('GitHub')
+  if (profile.links?.telegram) links.push('Telegram')
+  if (profile.links?.website) links.push('Website')
+  if (profile.links?.linkedin) links.push('LinkedIn')
+  if (profile.links?.twitter) links.push('Twitter')
+  
+  if (links.length > 0) msg += `Links: ${links.join(' • ')}\n`
 
-  if (links.length > 0) {
-    msg += `Links: ${links.join(' • ')}\n`
-  }
-
-  await ctx.editMessageText(msg.trimEnd()).catch(() => {})
+  await ctx.editMessageText(msg.trimEnd()).catch(() => ctx.reply(msg.trimEnd()))
   logger.info(`User ${ctx.from?.id} viewed profile`)
 }
 

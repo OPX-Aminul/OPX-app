@@ -14,6 +14,11 @@ const helpText = `📚 HELP & COMMANDS
 🌐 Websites:
   /websites - View websites & projects
 
+🔍 AI:
+  /ai <question> - Ask AI a question
+  /summarize <text> - Summarize text with AI
+  /translate <text> <lang> - Translate text
+
 👋 Welcome:
   /rules - View group rules
 
@@ -27,15 +32,11 @@ const helpText = `📚 HELP & COMMANDS
   /editwebsite - Edit a website
   /deletewebsite - Delete a website
   /setrules - Set group rules
-  /settings - Bot settings
-
-📊 Statistics available in admin panel.
-
-For support, contact the owner.`
+  /settings - Bot settings`
 
 const handleHelp = async (ctx) => {
-  await ctx.editMessageText(helpText).catch(() => {
-    ctx.reply(helpText)
+  await ctx.reply(helpText, {
+    reply_markup: { inline_keyboard: [[{ text: '🏠 Back', callback_data: 'main_menu' }]] }
   })
   logger.info(`User ${ctx.from?.id} viewed help`)
 }

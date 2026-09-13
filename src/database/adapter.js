@@ -4,5 +4,4 @@ class DatabaseAdapter {
   async delete(key) { throw new Error('Not implemented') }
   async getAll() { throw new Error('Not implemented') }
 }
-
 module.exports = DatabaseAdapter

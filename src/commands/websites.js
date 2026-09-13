@@ -1,5 +1,4 @@
 const websitesService = require('../services/websitesService')
-const { createMainMenu } = require('../keyboards/buttons')
 const logger = require('../utils/logger')
 
 const handleWebsites = async (ctx) => {
@@ -8,31 +7,26 @@ const handleWebsites = async (ctx) => {
   const websites = paginated.items
 
   let msg = '🌐 MY WEBSITES & PROJECTS\n\n'
-
   if (websites.length === 0) {
     msg += 'No websites added yet.'
   } else {
-    websites.forEach((site) => {
+    websites.forEach(site => {
       msg += `• ${site.name}\n`
       if (site.description) msg += `  ${site.description}\n`
-      msg += `\n`
+      msg += '\n'
     })
   }
+  msg += '\nChoose a website 👇'
 
-  msg += `\nChoose a website 👇`
-
-  const kb = { inline_keyboard: [] }
+  const kb = []
   for (const site of websites) {
-    kb.inline_keyboard.push([{ text: site.name, url: site.url }])
+    kb.push([{ text: site.name, url: site.url }])
   }
-  kb.inline_keyboard.push([
-    { text: '⬅️ Previous', callback_data: `websites_page_${page - 1}` },
-    { text: `Page ${page}/${paginated.totalPages}`, callback_data: 'noop' },
-    { text: 'Next ➡️', callback_data: `websites_page_${page + 1}` },
-  ])
-  kb.inline_keyboard.push([{ text: '🏠 Back', callback_data: 'main_menu' }])
+  if (paginated.hasPrev) kb.push([{ text: '⬅️ Previous', callback_data: `websites_page_${page - 1}` }])
+  if (paginated.hasNext) kb.push([{ text: 'Next ➡️', callback_data: `websites_page_${page + 1}` }])
+  kb.push([{ text: '🏠 Back', callback_data: 'main_menu' }])
 
-  await ctx.editMessageText(msg, { reply_markup: kb }).catch(() => {})
+  await ctx.editMessageText(msg, { reply_markup: { inline_keyboard: kb } }).catch(() => {})
   logger.info(`User ${ctx.from?.id} viewed websites page ${page}`)
 }
 

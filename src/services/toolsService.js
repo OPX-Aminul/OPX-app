@@ -6,17 +6,14 @@ const logger = require('../utils/logger')
 const TOOLS_FILE = path.join(__dirname, '../../data/tools.json')
 
 class ToolsService {
-  constructor() {
-    this.tools = []
-  }
+  constructor() { this.tools = [] }
 
   async load() {
     try {
       const raw = await fs.readFile(TOOLS_FILE, 'utf8')
       this.tools = JSON.parse(raw)
-      logger.info(`Loaded ${this.tools.length} tools from tools.json`)
-    } catch (err) {
-      logger.warn('tools.json not found or invalid, starting fresh')
+      logger.info(`Loaded ${this.tools.length} tools`)
+    } catch {
       this.tools = []
       await this.save()
     }
@@ -26,17 +23,12 @@ class ToolsService {
     await fs.writeFile(TOOLS_FILE, JSON.stringify(this.tools, null, 2), 'utf8')
   }
 
-  getAll() {
-    return [...this.tools]
-  }
-
-  getById(id) {
-    return this.tools.find((t) => t.id === id) || null
-  }
+  getAll() { return [...this.tools] }
+  getById(id) { return this.tools.find(t => t.id === id) || null }
 
   getByCommand(command) {
     const sanitized = sanitizeCommand(command)
-    return this.tools.find((t) => sanitizeCommand(t.command) === sanitized) || null
+    return this.tools.find(t => sanitizeCommand(t.command) === sanitized) || null
   }
 
   async add(toolData) {
@@ -66,65 +58,47 @@ class ToolsService {
       updatedAt: new Date().toISOString(),
     }
 
-    if (this.tools.some((t) => t.command === tool.command)) {
+    if (this.tools.some(t => t.command === tool.command)) {
       throw new Error(`Command "${tool.command}" already exists.`)
     }
-
     this.tools.push(tool)
     await this.save()
-    logger.info(`Added tool: ${tool.name}`)
     return tool
   }
 
   async update(id, updates) {
-    const index = this.tools.findIndex((t) => t.id === id)
+    const index = this.tools.findIndex(t => t.id === id)
     if (index === -1) throw new Error('Tool not found.')
-
-    const existing = this.tools[index]
-    this.tools[index] = {
-      ...existing,
-      ...updates,
-      id: existing.id,
-      command: existing.command,
-      updatedAt: new Date().toISOString(),
-    }
-
+    this.tools[index] = { ...this.tools[index], ...updates, updatedAt: new Date().toISOString() }
     await this.save()
-    logger.info(`Updated tool: ${id}`)
     return this.tools[index]
   }
 
   async remove(id) {
-    const index = this.tools.findIndex((t) => t.id === id)
+    const index = this.tools.findIndex(t => t.id === id)
     if (index === -1) throw new Error('Tool not found.')
-
     const removed = this.tools.splice(index, 1)[0]
     await this.save()
-    logger.info(`Deleted tool: ${removed.name}`)
     return removed
   }
 
   search(query) {
     if (!query) return this.getAll()
     const q = query.toLowerCase()
-    return this.tools.filter(
-      (t) =>
-        t.name.toLowerCase().includes(q) ||
-        t.description.toLowerCase().includes(q) ||
-        t.category.toLowerCase().includes(q) ||
-        t.tags.some((tag) => tag.toLowerCase().includes(q)) ||
-        t.author.toLowerCase().includes(q)
+    return this.tools.filter(t =>
+      t.name.toLowerCase().includes(q) ||
+      t.description.toLowerCase().includes(q) ||
+      t.category.toLowerCase().includes(q) ||
+      t.tags.some(tag => tag.toLowerCase().includes(q)) ||
+      t.author.toLowerCase().includes(q)
     )
   }
 
   getCategories() {
-    const cats = new Set(this.tools.map((t) => t.category).filter(Boolean))
-    return Array.from(cats).sort()
+    return [...new Set(this.tools.map(t => t.category).filter(Boolean))].sort()
   }
 
-  getPaginated(page = 1, perPage = 5) {
-    return paginate(this.getAll(), page, perPage)
-  }
+  getPaginated(page = 1, perPage = 5) { return paginate(this.getAll(), page, perPage) }
 }
 
 module.exports = new ToolsService()

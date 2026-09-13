@@ -11,8 +11,7 @@ const createToolsMenu = (tools, page = 1) => {
   const kb = new InlineKeyboard()
   const perPage = 5
   const start = (page - 1) * perPage
-  const end = start + perPage
-  const pageTools = tools.slice(start, end)
+  const pageTools = tools.slice(start, start + perPage)
 
   for (const tool of pageTools) {
     kb.text(tool.name, `tool_${tool.id}`).row()
@@ -30,7 +29,7 @@ const createToolDetailButtons = (tool) => {
   if (tool.download) kb.url('📥 Download', tool.download).row()
   if (tool.documentation) kb.url('📚 Documentation', tool.documentation).row()
   if (tool.website) kb.url('🔗 Website', tool.website).row()
-  kb.text('⬅️ Back', `tool_list`)
+  kb.text('⬅️ Back', `tool_list_${tool.id}`)
   return kb
 }
 

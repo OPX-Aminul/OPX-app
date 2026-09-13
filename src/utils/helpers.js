@@ -1,11 +1,6 @@
 const validateUrl = (url) => {
   if (!url || typeof url !== 'string') return false
-  try {
-    new URL(url)
-    return true
-  } catch {
-    return false
-  }
+  try { new URL(url); return true } catch { return false }
 }
 
 const sanitizeCommand = (cmd) => {
@@ -20,20 +15,14 @@ const escapeMarkdown = (text) => {
 
 const paginate = (items, page = 1, perPage = 5) => {
   const start = (page - 1) * perPage
-  const end = start + perPage
   return {
-    items: items.slice(start, end),
+    items: items.slice(start, start + perPage),
     total: items.length,
     page,
     totalPages: Math.ceil(items.length / perPage),
-    hasNext: end < items.length,
+    hasNext: start + perPage < items.length,
     hasPrev: page > 1,
   }
 }
 
-module.exports = {
-  validateUrl,
-  sanitizeCommand,
-  escapeMarkdown,
-  paginate,
-}
+module.exports = { validateUrl, sanitizeCommand, escapeMarkdown, paginate }

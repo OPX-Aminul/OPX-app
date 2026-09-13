@@ -5,17 +5,13 @@ const logger = require('../utils/logger')
 const PROFILE_FILE = path.join(__dirname, '../../data/profile.json')
 
 class ProfileService {
-  constructor() {
-    this.profile = null
-  }
+  constructor() { this.profile = null }
 
   async load() {
     try {
       const raw = await fs.readFile(PROFILE_FILE, 'utf8')
       this.profile = JSON.parse(raw)
-      logger.info('Profile loaded successfully')
-    } catch (err) {
-      logger.warn('profile.json not found, using defaults')
+    } catch {
       this.profile = this.getDefaultProfile()
       await this.save()
     }
@@ -30,22 +26,13 @@ class ProfileService {
       location: '',
       email: '',
       links: {
-        github: '',
-        telegram: '',
-        website: '',
-        portfolio: '',
-        facebook: '',
-        instagram: '',
-        youtube: '',
-        twitter: '',
-        linkedin: '',
-      },
+        github: '', telegram: '', website: '', portfolio: '',
+        facebook: '', instagram: '', youtube: '', twitter: '', linkedin: ''
+      }
     }
   }
 
-  get() {
-    return this.profile || this.getDefaultProfile()
-  }
+  get() { return this.profile || this.getDefaultProfile() }
 
   async update(updates) {
     if (!this.profile) this.profile = this.getDefaultProfile()
