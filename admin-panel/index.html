@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OPX Bot - Admin Panel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+    .header h1 { font-size: 24px; margin-bottom: 5px; }
+    .header p { opacity: 0.8; }
+    .nav { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .nav button { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+    .nav button:hover, .nav button.active { background: #3b82f6; border-color: #3b82f6; }
+    .card { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #334155; }
+    .card h2 { margin-bottom: 15px; color: #60a5fa; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+    .stat-card { background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; }
+    .stat-card .value { font-size: 28px; font-weight: bold; color: #60a5fa; }
+    .stat-card .label { font-size: 14px; color: #94a3b8; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; color: #94a3b8; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; }
+    .btn { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .btn:hover { background: #2563eb; }
+    .btn-success { background: #10b981; }
+    .btn-success:hover { background: #059669; }
+    .btn-danger { background: #ef4444; }
+    .btn-danger:hover { background: #dc2626; }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
+    .table th { color: #94a3b8; font-weight: 600; }
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+    .badge-success { background: #10b981; color: white; }
+    .badge-warning { background: #f59e0b; color: white; }
+    .badge-danger { background: #ef4444; color: white; }
+    .hidden { display: none; }
+    .section { animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🤖 OPX Team Bot</h1>
+      <p>Admin Control Panel</p>
+    </div>
+
+    <div class="nav">
+      <button class="active" onclick="showSection('dashboard')">📊 Dashboard</button>
+      <button onclick="showSection('tools')">🛠 Tools</button>
+      <button onclick="showSection('ai')">🤖 AI Providers</button>
+      <button onclick="showSection('github')">🔗 GitHub</button>
+      <button onclick="showSection('config')">⚙️ Configuration</button>
+      <button onclick="showSection('logs')">📝 Logs</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="section">
+      <div class="stats">
+        <div class="stat-card">
+          <div class="value" id="stat-users">0</div>
+          <div class="label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="stat-tools">0</div>
+          <div class="label">Tools</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="stat-incidents">0</div>
+          <div class="label">Incidents</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="stat-warnings">0</div>
+          <div class="label">Warnings</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOLS -->
+    <div id="tools" class="section hidden">
+      <div class="card">
+        <h2>Manage Tools</h2>
+        <button class="btn btn-success" onclick="showAddTool()">+ Add Tool</button>
+        <table class="table" style="margin-top: 15px;">
+          <thead>
+            <tr><th>Name</th><th>Command</th><th>Category</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="tools-list"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- AI PROVIDERS -->
+    <div id="ai" class="section hidden">
+      <div class="card">
+        <h2>AI Providers</h2>
+        <div id="ai-providers-list"></div>
+        <button class="btn btn-success" onclick="showAddProvider()">+ Add Provider</button>
+      </div>
+    </div>
+
+    <!-- GITHUB -->
+    <div id="github" class="section hidden">
+      <div class="card">
+        <h2>GitHub Repositories</h2>
+        <button class="btn btn-success" onclick="showAddGitHub()">+ Add Repository</button>
+      </div>
+    </div>
+
+    <!-- CONFIGURATION -->
+    <div id="config" class="section hidden">
+      <div class="card">
+        <h2>Configuration</h2>
+        <div class="form-group">
+          <label>Smart Group AI</label>
+          <select id="cfg-smart-ai" onchange="saveConfig('groupAI.enabled', this.value)">
+            <option value="true">Enabled</option>
+            <option value="false">Disabled</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Feature Flags</label>
+          <div id="feature-flags"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGS -->
+    <div id="logs" class="section hidden">
+      <div class="card">
+        <h2>Audit Log</h2>
+        <table class="table">
+          <thead>
+            <tr><th>Time</th><th>Action</th><th>Key</th><th>Admin</th></tr>
+          </thead>
+          <tbody id="audit-log"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    
+    async function apiRequest(endpoint, options = {}) {
+      const res = await fetch(`${API_BASE}/api${endpoint}`, {
+        headers: { 'Content-Type': 'application/json' },
+        ...options
+      });
+      return res.json();
+    }
+
+    function showSection(name) {
+      document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+      document.getElementById(name).classList.remove('hidden');
+      document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      loadDashboard();
+    }
+
+    async function loadDashboard() {
+      try {
+        const stats = await apiRequest('/stats');
+        document.getElementById('stat-users').textContent = stats.users || 0;
+        document.getElementById('stat-tools').textContent = stats.tools || 0;
+        document.getElementById('stat-incidents').textContent = stats.incidents || 0;
+        document.getElementById('stat-warnings').textContent = stats.warnings || 0;
+        
+        if (document.getElementById('tools').classList.contains('hidden') === false) {
+          loadTools();
+        }
+        if (document.getElementById('ai').classList.contains('hidden') === false) {
+          loadAIProviders();
+        }
+        if (document.getElementById('logs').classList.contains('hidden') === false) {
+          loadAuditLog();
+        }
+      } catch (e) {
+        console.error('Failed to load dashboard:', e);
+      }
+    }
+
+    async function loadTools() {
+      try {
+        const tools = await apiRequest('/tools');
+        const tbody = document.getElementById('tools-list');
+        tbody.innerHTML = tools.map(t => `
+          <tr>
+            <td>${t.name}</td>
+            <td>/${t.command}</td>
+            <td>${t.category || 'N/A'}</td>
+            <td><span class="badge badge-success">${t.status || 'active'}</span></td>
+            <td><button class="btn btn-danger" onclick="deleteTool('${t.id}')">Delete</button></td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error('Failed to load tools:', e);
+      }
+    }
+
+    async function loadAIProviders() {
+      try {
+        const providers = await apiRequest('/ai/providers');
+        const container = document.getElementById('ai-providers-list');
+        container.innerHTML = providers.map(p => `
+          <div style="background: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+            <strong>${p.name}</strong> - ${p.baseUrl}<br>
+            <small>Health: ${p.health || 'unknown'} | Priority: ${p.priority}</small>
+          </div>
+        `).join('') || '<p>No providers configured</p>';
+      } catch (e) {
+        console.error('Failed to load providers:', e);
+      }
+    }
+
+    async function loadAuditLog() {
+      try {
+        const logs = await apiRequest('/audit');
+        const tbody = document.getElementById('audit-log');
+        tbody.innerHTML = logs.slice(0, 50).map(l => `
+          <tr>
+            <td>${new Date(l.timestamp).toLocaleString()}</td>
+            <td>${l.action}</td>
+            <td>${l.key}</td>
+            <td>${l.adminId}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="4">No logs</td></tr>';
+      } catch (e) {
+        console.error('Failed to load logs:', e);
+      }
+    }
+
+    function showAddTool() {
+      const name = prompt('Tool name:');
+      if (!name) return;
+      const command = prompt('Command (e.g., my_tool):');
+      if (!command) return;
+      const category = prompt('Category (e.g., Cybersecurity):', 'Uncategorized');
+      
+      apiRequest('/tools', {
+        method: 'POST',
+        body: JSON.stringify({ name, command, category })
+      }).then(() => loadTools());
+    }
+
+    async function deleteTool(id) {
+      if (!confirm('Delete this tool?')) return;
+      await apiRequest(`/tools/${id}`, { method: 'DELETE' });
+      loadTools();
+    }
+
+    function showAddProvider() {
+      const name = prompt('Provider name:');
+      if (!name) return;
+      const baseUrl = prompt('Base URL (e.g., https://api.openai.com/v1):');
+      if (!baseUrl) return;
+      const apiKey = prompt('API Key:');
+      if (!apiKey) return;
+      
+      apiRequest('/ai/providers', {
+        method: 'POST',
+        body: JSON.stringify({ name, baseUrl, apiKey })
+      }).then(() => loadAIProviders());
+    }
+
+    function showAddGitHub() {
+      const owner = prompt('GitHub owner/organization:');
+      if (!owner) return;
+      const repo = prompt('Repository name:');
+      if (!repo) return;
+      const token = prompt('Personal Access Token:');
+      
+      apiRequest('/github/repos', {
+        method: 'POST',
+        body: JSON.stringify({ owner, name: repo, token })
+      }).then(() => alert('Repository added!'));
+    }
+
+    // Initialize
+    loadDashboard();
+  </script>
+</body>
+</html>

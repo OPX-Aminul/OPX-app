@@ -377,7 +377,13 @@ async function bootstrap() {
   process.once('SIGTERM', () => bot.stop('SIGTERM'))
 }
 
-bootstrap().catch(err => {
+bootstrap().then(async () => {
+  try {
+    await startWebServer()
+  } catch (err) {
+    logger.error('Failed to start web server:', err)
+  }
+}).catch(err => {
   logger.error('Failed to start bot:', err)
   process.exit(1)
 })
