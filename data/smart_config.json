@@ -1,0 +1,33 @@
+{
+  "smartGroupAI": {
+    "enabled": true,
+    "mode": "mention_only",
+    "unansweredTimeout": 300,
+    "webResearchEnabled": true,
+    "githubSearchEnabled": true,
+    "spamSensitivity": "medium",
+    "warningThreshold": 3,
+    "autoMute": false,
+    "escalationThreshold": 5
+  },
+  "aiClassifications": {
+    "NORMAL_CHAT": 0.3,
+    "QUESTION": 0.6,
+    "DIRECT_AI_REQUEST": 0.9,
+    "TECHNICAL_PROBLEM": 0.7,
+    "CRITICAL_PROBLEM": 0.95,
+    "ERROR_REPORT": 0.8,
+    "TOOL_REQUEST": 0.7,
+    "SPAM": 0.85,
+    "ABUSE": 0.9,
+    "DUPLICATE": 0.7,
+    "LOW_VALUE": 0.2,
+    "REQUIRES_ADMIN": 0.75,
+    "REQUIRES_FOLLOW_UP": 0.6
+  },
+  "smartTools": {
+    "enableDiscovery": true,
+    "requireAdminApproval": true,
+    "trustedSources": []
+  }
+}
