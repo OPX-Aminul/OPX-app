@@ -1,4 +1,6 @@
 const { Telegraf } = require('telegraf')
+const express = require('express')
+const path = require('path')
 require('dotenv').config()
 
 const settings = require('./config/settings')
@@ -24,7 +26,8 @@ const { errorHandler } = require('./middleware/errorHandler')
 const { ownerOnly, isAdmin, isOwner } = require('./middleware/auth')
 const { escapeMarkdown } = require('./utils/helpers')
 
-// Import handlers
+// Import API routes
+const apiRouter = require('./api')
 const handleStart = require('./commands/start')
 const handleHelp = require('./commands/help')
 const { handleToolsList } = require('./commands/tools')
@@ -110,9 +113,6 @@ bot.command('stats', ownerOnly(handleStats))
 bot.command('smart', ownerOnly(handleSmartDashboard))
 bot.command('warnings', ownerOnly(handleWarningsList))
 bot.command('knowledge', ownerOnly(handleKnowledgeBase))
-bot.command('config', ownerOnly(handleAdminConfig))
-
-// Smart commands
 bot.command('config', ownerOnly(handleAdminConfig))
 
 // Group AI middleware
@@ -382,8 +382,38 @@ bootstrap().then(async () => {
     await startWebServer()
   } catch (err) {
     logger.error('Failed to start web server:', err)
+    // Bot still works without web server
   }
 }).catch(err => {
   logger.error('Failed to start bot:', err)
   process.exit(1)
 })
+
+// Web server for Admin Panel / Telegram Mini App
+async function startWebServer() {
+  const app = express()
+  const PORT = process.env.PORT || 3001
+  
+  app.use(express.json())
+  app.use(express.static(path.join(__dirname, '../../admin-panel')))
+  app.use('/api', apiRouter)
+  
+  // Health check
+  app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() })
+  })
+  
+  // Admin Panel route
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../admin-panel/index.html'))
+  })
+  app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../admin-panel/index.html'))
+  })
+  
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    logger.info(`Web server started on port ${PORT}`)
+  })
+  
+  return server
+}

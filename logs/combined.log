@@ -1,0 +1,4 @@
+{"level":"info","message":"Loaded 0 tools","service":"opx-telegram-bot","timestamp":"2026-09-13T14:34:43.514Z"}
+{"level":"info","message":"Bot commands registered successfully","service":"opx-telegram-bot","timestamp":"2026-09-13T14:34:44.332Z"}
+{"level":"info","message":"Bot started successfully","service":"opx-telegram-bot","timestamp":"2026-09-13T14:34:44.333Z"}
+{"level":"info","message":"Web server started on port 3001","service":"opx-telegram-bot","timestamp":"2026-09-13T14:34:44.349Z"}
