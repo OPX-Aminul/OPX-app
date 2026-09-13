@@ -23,10 +23,10 @@ const handleSmartDashboard = async (ctx) => {
   const tools = toolsService.getAll()
   if (tools.length > 0) {
     msg += '🛠 TOOL USAGE\n'
-    tools.slice(0, 5).forEach(t => {
+    for (const t of tools.slice(0, 5)) {
       const toolStats = await getToolStats(t.id)
       msg += `• ${t.name}: ${toolStats.total} executions\n`
-    })
+    }
     msg += '\n'
   }
   
