@@ -1,0 +1,77 @@
+{
+  "general": {
+    "appName": "Telegram Premium Bot",
+    "version": "2.0.0",
+    "language": "en"
+  },
+  "aiProviders": [],
+  "models": {
+    "primary": "",
+    "fast": "",
+    "reasoning": "",
+    "fallback": ""
+  },
+  "ads": {
+    "system1": { "enabled": false, "provider": "", "credentials": {} },
+    "system2": { "enabled": false, "provider": "", "credentials": {} }
+  },
+  "tools": {},
+  "github": {
+    "connections": []
+  },
+  "groupAI": {
+    "enabled": true,
+    "responseThreshold": 0.7,
+    "mentionRequired": true,
+    "unansweredTimeout": 300,
+    "criticalThreshold": 0.95,
+    "spamSensitivity": "medium",
+    "warningThreshold": 3,
+    "autoModeration": "conservative",
+    "cooldownSeconds": 60,
+    "maxResponsesPerMinute": 5
+  },
+  "moderation": {
+    "spamThreshold": 5,
+    "warningCount": 3,
+    "muteThreshold": 3,
+    "banThreshold": 5,
+    "linkSpamDetection": true,
+    "floodDetection": true,
+    "duplicateDetection": true,
+    "autoModeration": false,
+    "humanApprovalRequired": true
+  },
+  "featureFlags": {
+    "smartGroupAI": true,
+    "webResearch": true,
+    "githubSearch": true,
+    "toolDiscovery": true,
+    "autoModeration": false,
+    "ads": true,
+    "aiProvider": true,
+    "aiFallback": true,
+    "advancedAnalytics": true,
+    "incidentManagement": true,
+    "automaticWarning": false,
+    "automaticBan": false
+  },
+  "database": {
+    "type": "json",
+    "connectionString": ""
+  },
+  "security": {
+    "encryptionEnabled": true,
+    "secretRotationDays": 90,
+    "maxLoginAttempts": 5
+  },
+  "notifications": {
+    "emailEnabled": false,
+    "telegramEnabled": true
+  },
+  "logging": {
+    "level": "info",
+    "retentionDays": 30,
+    "auditEnabled": true
+  }
+}

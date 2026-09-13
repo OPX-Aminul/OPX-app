@@ -13,6 +13,7 @@ const adsService = require('./services/adsService')
 const downloadsService = require('./services/downloadsService')
 const channelsService = require('./services/channelsService')
 const moderationService = require('./services/moderationService')
+const configService = require('./services/config/configService')
 const smartOrchestrator = require('./services/smart/aiOrchestrator')
 const incidentManager = require('./services/smart/incidentManager')
 const spamDetector = require('./services/smart/spamDetector')
@@ -41,6 +42,17 @@ const { handleAI, handleSummarize, handleTranslate } = require('./commands/ai')
 const { handleSmartDashboard } = require('./commands/smartDashboard')
 const { handleWarningsList } = require('./commands/smartWarnings')
 const { handleKnowledgeBase, handleAddSolutionPrompt, handleAddSolutionQuestion, handleAddSolutionAnswer, kbFlow } = require('./commands/smartKnowledge')
+const { 
+  handleAdminConfig, 
+  handleAIProvidersList, 
+  handleAddProviderPrompt, 
+  handleAddProviderName, 
+  handleAddProviderUrl, 
+  handleAddProviderKey,
+  handleTestProvider,
+  handleRefreshModels,
+  configFlow 
+} = require('./commands/adminConfig')
 
 // Initialize bot
 const bot = new Telegraf(settings.BOT_TOKEN)
@@ -96,10 +108,12 @@ bot.command('translate', handleTranslate)
 bot.command('settings', ownerOnly(handleSettings))
 bot.command('stats', ownerOnly(handleStats))
 bot.command('smart', ownerOnly(handleSmartDashboard))
-
-// Smart commands
 bot.command('warnings', ownerOnly(handleWarningsList))
 bot.command('knowledge', ownerOnly(handleKnowledgeBase))
+bot.command('config', ownerOnly(handleAdminConfig))
+
+// Smart commands
+bot.command('config', ownerOnly(handleAdminConfig))
 
 // Group AI middleware
 bot.on('message', async (ctx) => {
@@ -109,6 +123,9 @@ bot.on('message', async (ctx) => {
   const userId = ctx.from?.id
   const groupId = ctx.chat?.id
   const message = ctx.message.text
+  
+  // Check feature flag
+  if (!configService.get('featureFlags.smartGroupAI', true)) return
   
   try {
     // Process through smart orchestrator
@@ -158,7 +175,6 @@ bot.on('callback_query', async (ctx) => {
       break
     case 'smart_incidents':
       if (!isOwner(ctx)) { await ctx.reply('🚫 Unauthorized.'); return }
-      // Handle incidents display
       break
     case 'smart_warnings':
       if (!isOwner(ctx)) { await ctx.reply('🚫 Unauthorized.'); return }
@@ -168,9 +184,21 @@ bot.on('callback_query', async (ctx) => {
       if (!isOwner(ctx)) { await ctx.reply('🚫 Unauthorized.'); return }
       await handleKnowledgeBase(ctx)
       break
-    case 'kb_add_solution':
+    case 'admin_menu':
+      if (!isAdmin(ctx)) { await ctx.reply('🚫 Unauthorized.'); return }
+      await handleAdmin(ctx)
+      break
+    case 'admin_config':
       if (!isOwner(ctx)) { await ctx.reply('🚫 Unauthorized.'); return }
-      await handleAddSolutionPrompt(ctx)
+      await handleAdminConfig(ctx)
+      break
+    case 'config_ai_providers':
+      if (!isOwner(ctx)) { await ctx.reply('🚫 Unauthorized.'); return }
+      await handleAIProvidersList(ctx)
+      break
+    case 'config_add_provider':
+      if (!isOwner(ctx)) { await ctx.reply('🚫 Unauthorized.'); return }
+      await handleAddProviderPrompt(ctx)
       break
     default:
       if (data.startsWith('tool_')) {
@@ -181,9 +209,6 @@ bot.on('callback_query', async (ctx) => {
         await handleSearchPrompt(ctx)
       } else if (data === 'help') {
         await handleHelp(ctx)
-      } else if (data === 'admin_menu') {
-        if (!isAdmin(ctx)) { await ctx.reply('🚫 Unauthorized.'); return }
-        await handleAdmin(ctx)
       } else if (data === 'admin_settings') {
         if (!isOwner(ctx)) { await ctx.reply('🚫 Unauthorized.'); return }
         await handleSettings(ctx)
@@ -205,16 +230,48 @@ bot.on('callback_query', async (ctx) => {
       } else if (data.startsWith('warning_')) {
         if (!isOwner(ctx)) { await ctx.reply('🚫 Unauthorized.'); return }
         await require('./commands/smartWarnings').handleWarningAction(ctx)
+      } else if (data.startsWith('test_provider_')) {
+        if (!isOwner(ctx)) { await ctx.reply('🚫 Unauthorized.'); return }
+        await handleTestProvider(ctx)
+      } else if (data.startsWith('refresh_models_')) {
+        if (!isOwner(ctx)) { await ctx.reply('🚫 Unauthorized.'); return }
+        await handleRefreshModels(ctx)
       }
       break
   }
 })
 
-// Handle kb flow
+// Handle config flows
 bot.on('message', async (ctx) => {
   const userId = ctx.from?.id
-  const kbUserFlow = kbFlow[userId]
   
+  // Tool addition flow
+  const toolFlow = addFlow[userId]
+  if (toolFlow && isOwner(ctx)) {
+    switch (toolFlow.step) {
+      case 'name': await handleAddToolName(ctx); break
+      case 'command': await handleAddToolCommand(ctx); break
+      case 'category': await handleAddToolCategory(ctx); break
+      case 'description': await handleAddToolDescription(ctx); break
+      case 'github': await handleAddToolGitHub(ctx); break
+      case 'download': await handleAddToolDownload(ctx); break
+    }
+    return
+  }
+
+  // Ad addition flow
+  const adFlowState = adFlow[userId]
+  if (adFlowState && isOwner(ctx)) {
+    switch (adFlowState.step) {
+      case 'name': await require('./commands/adminAds').handleAddAdName(ctx); break
+      case 'provider': await require('./commands/adminAds').handleAddAdProvider(ctx); break
+      case 'targetUrl': await require('./commands/adminAds').handleAddAdTarget(ctx); break
+    }
+    return
+  }
+
+  // Knowledge base flow
+  const kbUserFlow = kbFlow[userId]
   if (kbUserFlow && isOwner(ctx)) {
     switch (kbUserFlow.step) {
       case 'question':
@@ -224,6 +281,44 @@ bot.on('message', async (ctx) => {
         await handleAddSolutionAnswer(ctx)
         break
     }
+    return
+  }
+
+  // AI Provider addition flow
+  const providerFlow = configFlow[userId]
+  if (providerFlow && isOwner(ctx)) {
+    switch (providerFlow.step) {
+      case 'provider_name':
+        await handleAddProviderName(ctx)
+        break
+      case 'base_url':
+        await handleAddProviderUrl(ctx)
+        break
+      case 'api_key':
+        await handleAddProviderKey(ctx)
+        break
+    }
+    return
+  }
+
+  // Search command
+  if (ctx.message.text.startsWith('/search')) {
+    await handleSearch(ctx)
+    return
+  }
+
+  // AI commands
+  if (ctx.message.text.startsWith('/ai')) {
+    await handleAI(ctx)
+    return
+  }
+  if (ctx.message.text.startsWith('/summarize')) {
+    await handleSummarize(ctx)
+    return
+  }
+  if (ctx.message.text.startsWith('/translate')) {
+    await handleTranslate(ctx)
+    return
   }
 })
 
@@ -239,6 +334,7 @@ async function bootstrap() {
   await downloadsService.load()
   await channelsService.load()
   await moderationService.load()
+  await configService.load()
   await incidentManager.load()
   await spamDetector.load()
   await knowledgeBase.load()
@@ -263,6 +359,7 @@ async function bootstrap() {
     { command: 'smart', description: 'Smart management dashboard (owner only)' },
     { command: 'warnings', description: 'Manage warnings (owner only)' },
     { command: 'knowledge', description: 'Knowledge base (owner only)' },
+    { command: 'config', description: 'Configuration center (owner only)' },
   ]
 
   try {
